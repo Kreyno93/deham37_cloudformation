@@ -1,0 +1,43 @@
+name: Delete CloudFormation Stack
+
+# Manual trigger only — deleting a stack should never happen automatically.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "delete" to confirm stack deletion'
+        required: true
+
+env:
+  AWS_REGION: us-west-2
+  STACK_NAME: my-app-stack
+
+permissions:
+  contents: read
+
+jobs:
+  delete:
+    name: Delete Stack
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.confirm == 'delete' }}
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Delete CloudFormation stack
+        run: |
+          aws cloudformation delete-stack --stack-name ${{ env.STACK_NAME }}
+
+      - name: Wait for deletion to complete
+        run: |
+          aws cloudformation wait stack-delete-complete --stack-name ${{ env.STACK_NAME }}
+
+      - name: Confirm deletion
+        run: |
+          echo "Stack ${{ env.STACK_NAME }} deleted successfully."
