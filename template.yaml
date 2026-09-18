@@ -29,6 +29,16 @@ Resources:
       SecurityGroups:
         - !Ref InstanceSecurityGroup
 
+  myVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 192.168.0.0/20
+      EnableDnsSupport: "true"
+      EnableDnsHostnames: "true"
+      Tags:
+        - Key: Name
+          Value: Webserver-VPC
+
 Outputs:
   InstanceId:
     Value: !Ref EC2Instance
