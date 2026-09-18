@@ -1,0 +1,36 @@
+# deploy simple ec2 instance with cloudformation, t3.micro, latest amazon linux 2023, "vockey" key pair
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Simple EC2 instance (t3.micro, latest Amazon Linux 2023, vockey key pair)
+  launched into the default VPC in us-west-2.
+
+Parameters:
+  LatestAmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
+
+Resources:
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow SSH access
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.micro
+      ImageId: !Ref LatestAmiId
+      KeyName: vockey
+      SecurityGroups:
+        - !Ref InstanceSecurityGroup
+
+Outputs:
+  InstanceId:
+    Value: !Ref EC2Instance
+  PublicIp:
+    Value: !GetAtt EC2Instance.PublicIp
